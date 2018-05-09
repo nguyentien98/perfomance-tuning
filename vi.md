@@ -12,7 +12,7 @@ Tin tốt là MySQL 5.7 có giá trị mặc định tốt hơn đáng kể. Mor
 *   [innodb\_buffer\_pool_instances](http://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html#sysvar_innodb_buffer_pool_instances) = 8 (or 1 if innodb\_buffer\_pool_size < 1GB)
 *   [query\_cache\_type](https://www.percona.com/blog/2015/01/02/the-mysql-query-cache-how-it-works-and-workload-impacts-both-good-and-bad/) = 0; query\_cache\_size = 0; (disabling mutex)
 
-Trong MySQL 5.7, chỉ có bốn biến thực sự quan trọng cần được thay đổi. Tuy nhiên, có các biến khác của InnoDB và MySQL toàn cục có thể cần được điều chỉnh cho một khối lượng công việc và phần cứng cụ thể.
+Trong MySQL 5.7, chỉ có bốn biến thực sự quan trọng cần được thay đổi. Tuy nhiên, có các biến InnoDB và biến MySQL toàn cục khác cần được điều chỉnh cho một khối lượng công việc và phần cứng cụ thể.
 
 Để bắt đầu, hãy thêm các cài đặt sau vào my.cnf trong phần \[mysqld\]. Bạn sẽ cần phải khởi động lại MySQL:
 
@@ -63,17 +63,17 @@ Có một số biến InnoDB khác có thể được điều chỉnh thêm:
 _innodb\_autoinc\_lock_mode_
 
 
-Thiết lập [innodb\_autoinc\_lock_mode](http://dev.mysql.com/doc/refman/5.7/en/innodb-auto-increment-handling.html) = 2 (chế độ xen kẽ) có thể loại bỏ sự cần thiết cho bảng ở mức khóa AUTO-INC (và có thể tăng hiệu suất khi các câu lệnh chèn nhiều hàng được sử dụng để chèn các giá trị vào các bảng có khóa chính auto_increment). Điều này đòi hỏi `binlog_format = ROW` hoặc`MIXED` (và ROW là mặc định trong MySQL 5.7).
+Thiết lập [innodb\_autoinc\_lock_mode](http://dev.mysql.com/doc/refman/5.7/en/innodb-auto-increment-handling.html) = 2 (chế độ xen kẽ) có thể loại bỏ sự phụ thuộc vào khóa AUTO-INC ở mức độ bảng (và có thể tăng hiệu suất khi các câu lệnh chèn nhiều hàng được sử dụng để chèn các giá trị vào các bảng có khóa chính auto_increment). Điều này đòi hỏi `binlog_format = ROW` hoặc`MIXED` (và ROW là mặc định trong MySQL 5.7).
 
 _innodb\_io\_capacity_ và _innodb\_io\_capacity_max_
 
-Đây là một điều chỉnh nâng cao hơn, và chỉ có ý nghĩa khi bạn đang thực hiện rất nhiều việc ghi mọi lúc (nó không áp dụng cho việc đọc, tức là SELECT). Nếu bạn thực sự cần phải điều chỉnh nó, phương pháp tốt nhất là biết bao nhiêu IOPS hệ thống có thể làm. Ví dụ: nếu máy chủ có một ổ SSD, chúng tôi có thể đặt `innodb_io_capacity_max = 6000` và `innodb_io_capacity = 3000` (50% giá trị tối đa). Đó là một ý tưởng tốt để chạy sysbench hoặc bất kỳ công cụ benchmark khác nào để chuẩn hóa thông lượng đĩa.
+Đây là một điều chỉnh nâng cao hơn, và chỉ có ý nghĩa khi bạn đang thực hiện rất nhiều việc ghi quá nhiều (nó không áp dụng cho việc đọc, tức là SELECT). Nếu bạn thực sự cần phải điều chỉnh nó, phương pháp tốt nhất là biết bao nhiêu IOPS hệ thống có thể làm. Ví dụ: nếu máy chủ có một ổ SSD, chúng tôi có thể đặt `innodb_io_capacity_max = 6000` và `innodb_io_capacity = 3000` (50% giá trị tối đa). Đó là một ý tưởng tốt để chạy sysbench hoặc bất kỳ công cụ benchmark khác nào để chuẩn hóa thông lượng đĩa.
 
 Nhưng chúng ta có cần phải lo lắng về cài đặt này không? Nhìn vào biểu đồ [những trang rác](http://dev.mysql.com/doc/refman/5.7/en/glossary.html#glos_dirty_page) của vùng đệm:
 
 [![screen-shot-2016-10-03-at-7-19-47-pm](https://www.percona.com/blog/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-7.19.47-PM.png)](https://www.percona.com/blog/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-7.19.47-PM.png)
 
-Trong trường hợp này, tổng số trang rác cao, và có vẻ như InnoDB không thể theo kịp với việc xả chúng. Nếu chúng tôi có hệ thống ổ đĩa SSD, chúng tôi có thể hưởng lợi từ việc tăng `innodb_io_capacity` và `innodb_io_capacity_max`.
+Trong trường hợp này, tổng số trang rác cao, và có vẻ như InnoDB không thể theo kịp với việc xóa chúng. Nếu chúng tôi có hệ thống ổ đĩa SSD, chúng tôi có thể hưởng lợi từ việc tăng `innodb_io_capacity` và `innodb_io_capacity_max`.
 
 _**Kết luận hoặc phiên bản TL;DR**_
 
